@@ -28,7 +28,7 @@ export default defineEventHandler(async (event: H3Event) => {
     });
   }
 
-  const uploadDir = path.join(process.cwd(), 'assets');
+  const uploadDir = path.join(process.cwd(), 'public' ,'images');
   await fs.mkdir(uploadDir, { recursive: true });
 
   const fileName = `${Date.now()}-${file.filename}`;
@@ -36,5 +36,5 @@ export default defineEventHandler(async (event: H3Event) => {
 
   await fs.writeFile(filePath, file.data);
 
-  return { filename: fileName, filepath: `/assets/${fileName}` };
+  return { filename: fileName, filepath: `/images/${fileName}` };
 });
