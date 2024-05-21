@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('desc');
-            $table->float('price');
+            $table->decimal('price');
             $table->integer('delivery_time');
             $table->integer('stock');
             $table->string('img_url');

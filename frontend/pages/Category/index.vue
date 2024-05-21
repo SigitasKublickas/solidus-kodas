@@ -1,6 +1,16 @@
 <script lang="ts" setup>
-const {data:categories}=useFetch<Category[]>('http://127.0.0.1:8000/categories');
 
+const categories = ref<Category[]>([]);
+
+(async () => {
+  try{
+    const {data: result} = await useFetch<Category[]>('http://127.0.0.1:8000/categories');
+    result.value ?categories.value = result.value : categories.value=[];
+  }
+  catch(e){
+    console.error(e);
+  }
+})();
 </script>
 
 <template>

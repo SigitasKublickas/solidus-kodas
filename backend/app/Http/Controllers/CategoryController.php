@@ -12,15 +12,27 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($id = null)
     {
-        $categories = Category::with([
-            'cat_childs' => function ($query) {
-                $query->with('cat_childs'); // Recursive loading for deeper nesting
-            }
-        ])->whereNull('parent_id')->get();
 
-        return response()->json($categories);
+
+        if ($id == null) {
+            $categories = Category::with([
+                'cat_childs' => function ($query) {
+                    $query->with('cat_childs');
+                }
+            ])->whereNull('parent_id')->get();
+            return response()->json($categories);
+        } else {
+            $categoryId = Category::where("path", $id)->first();
+            $category = Category::with(['cat_childs'])->findOrFail($categoryId->id);
+
+            if ($category->cat_childs->isNotEmpty()) {
+                return response()->json($category->cat_childs);
+            }
+
+        }
+
 
     }
 
@@ -55,19 +67,11 @@ class CategoryController extends Controller
     public function showCategoryOrProductsData($category_path)
     {
         $categoryId = Category::where("path", $category_path)->first();
-        $category = Category::with(['cat_childs', 'products'])->findOrFail($categoryId->id);
+        $category = Category::with(['cat_childs'])->findOrFail($categoryId->id);
 
         if ($category->cat_childs->isNotEmpty()) {
-            return response()->json([
-                'type' => 'child_categories',
-                'data' => $category->cat_childs,
-            ]);
+            return response()->json($category->cat_childs);
         }
-
-        return response()->json([
-            'type' => 'products',
-            'data' => $category->products,
-        ]);
 
     }
     public function getWithoutChild()

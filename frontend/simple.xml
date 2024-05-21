@@ -1,0 +1,15 @@
+
+<products>
+    <product>
+        <name>Piestukas HB</name>
+        <desc>Super piestukas</desc>
+        <price>3.00</price>
+        <delivery_time>2</delivery_time>
+        <stock>10</stock>
+        <img_url>sdafasdf</img_url>
+        <category_id>15</category_id>
+        <brand>piestukas_nice</brand>
+        <model>hbn</model>
+        <condition>New</condition>
+    </product>
+</products>

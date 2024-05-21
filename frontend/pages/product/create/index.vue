@@ -1,5 +1,6 @@
 <script setup lang="ts">
 
+import axios from 'axios';
 
 const {data: categories} = await useFetch<{value:string, name:string}[]>('http://localhost:8000/categories/get/withoutChild');
 
@@ -8,7 +9,7 @@ const conditionArr=[{value:"New",name:"Naujas"},{value:"Used",name:"Naudotas"},{
 interface Indexable {
   [key: string]: string | number; 
 }
-
+const file = ref<File | null>(null);
 const formData = ref<Indexable>({
   name: "",
   desc: "",
@@ -17,7 +18,6 @@ const formData = ref<Indexable>({
   stock: 0,
   brand: "",
   model: "",
-  img_url:"",
   condition: "New",
   category_id: 0,
 });
@@ -29,16 +29,27 @@ function onChange(value:{value:string,name:string}){
 
 async function onSubmit(e:any){
     e.preventDefault();
-
+    let fName = "";
     await useFetch(
         "http://localhost:8000/sanctum/csrf-cookie",
         {credentials :"include"}
     );
 
-    
-    const jsonBody = JSON.stringify(formData.value);
+    try {
+        const response = await axios.post<{ filename: string, filepath: string }>('/api/upload', {file:file.value}, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+        });
+            fName = response.data.filename;
+    } catch (error) {
+            console.error('Error uploading file:', error);
+        }
 
-    const {data,error} = await useFetch(
+    const jsonBody = JSON.stringify({...formData.value ,img_url:fName});
+
+    try{
+        const {data,error} = await useFetch(
         "http://localhost:8000/products",
         {
             credentials:"include",
@@ -50,22 +61,42 @@ async function onSubmit(e:any){
             body:jsonBody
         }
     );
-    console.log({data,error});
+        console.log({data,error});
+    }
+    catch(error){
+        console.error('Error uploading file:', error);
+    }
 }
+
+const onFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files.length > 0) {
+    file.value = target.files[0];
+  }
+};
 
 </script>
 
 <template>
 <div class="flex justify-center content-center w-full h-auto flex-col">
-    <h1 class="text-gray-900 text-3xl title-font font-medium mb-1">Sukurti Produktą</h1>
+    <div class="container pt-12 p-2 flex justify-center items-center">
+            <h1 class="text-gray-900 text-3xl title-font font-medium mb-1">Sukurti Produktą</h1>
+        </div>
+        <div class="container pt-12 grid gap-6 mb-6 md:grid-cols-2 p-2">
+            <NuxtLink to="/product/create/xml" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sukurti su xml</NuxtLink>
+        </div>
     <div class="container pt-12">
         <form @submit="onSubmit">
+         
             <div class="grid gap-6 mb-6 md:grid-cols-2 p-2">
                 <Input type="text" name="name" placeholder="Pavadinimas" @change="onChange"/>
                 <Input type="text" name="desc" placeholder="Aprašymas" @change="onChange" />
                 <Input type="number" name="price" placeholder="Kaina" @change="onChange"  />
                 <Input type="number" name="delivery_time" placeholder="Pristatymo laikas" @change="onChange"  />
-                <Input type="string" name="img_url" placeholder="Pristatymo laikas" @change="onChange"  />
+                <div>
+                    <label for="img_url" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Produkto Nuotrauka</label>
+                    <input type="file" accept="image/png" @change="onFileChange" id="first_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required />
+                </div>
                 <Input type="number" name="stock" placeholder="Kiekis" @change="onChange"/>
                 <Input type="text" name="brand" placeholder="Prekės ženklas" @change="onChange"/>
                 <Input type="text" name="model" placeholder="Modelis" @change="onChange"/>
@@ -83,10 +114,9 @@ async function onSubmit(e:any){
                 </select>
             </div> 
             <div class="mb-6 p-2">
-                <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sukurti</button>
             </div> 
         </form>
-
     </div>
 </div>
 </template>

@@ -23,3 +23,9 @@ type Category = {
     updated_at:string;
 }&{cat_childs:Category[]};
 
+type Filter = {
+    name:string,
+    table_name: string,
+    items:{name:string,count:number}[]
+}
+

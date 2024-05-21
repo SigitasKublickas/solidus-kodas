@@ -1,49 +1,55 @@
-<template>
-    <!--
-  This example requires some changes to your config:
+<script setup lang="ts">
+import { getFilteredData, getParamsArrayFromObj, getParamsUrlString } from '~/helpers';
+//routes
+const route = useRoute();
+const router = useRouter();
+
+// params from routes
+const paramsFromUrl = router.currentRoute.value.query;
+const paramsToString = getParamsUrlString(getParamsArrayFromObj(paramsFromUrl));
+
+//refs to save data
+const products = ref<Product[]>([]);
+const filters = ref<Filter[]>([]);
+
+const checkedNames = ref<{name:string,item:string}[]>(getParamsArrayFromObj(paramsFromUrl));
+
+// fetch to set data
+const fetchAndSetProductsAndFilters = async (id: string | string [], params: string) => {
+    try {
+      const data = await getFilteredData(id, params);
+      products.value = data[0].products;
+      filters.value = data[0].filters;
+    } catch (error) {
+        console.error("Error fetching data:", error);
+    }
+};
+// function who set data when page open
+(async () => {
+    await fetchAndSetProductsAndFilters(route.params.id, paramsToString);
+})();
+
+//watch every time change filters refresh values of filters and products
+watch(checkedNames, () => {
+
+  const urlParams = getParamsUrlString(checkedNames.value);
+
+  router.replace(`${route.params.id}?${urlParams}`);
   
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-    ],
-  }
-  ```
--->
+  fetchAndSetProductsAndFilters(route.params.id, urlParams);
+});
+</script>
+
+
+<template>
 <div class="bg-white">
   <div>
-    <!--
-      Mobile filter dialog
-
-      Off-canvas menu for mobile, show/hide based on off-canvas menu state.
-    -->
-    <div class="relative z-40 lg:hidden" role="dialog" aria-modal="true">
-      <!--
-        Off-canvas menu backdrop, show/hide based on off-canvas menu state.
-
-        Entering: "transition-opacity ease-linear duration-300"
-          From: "opacity-0"
-          To: "opacity-100"
-        Leaving: "transition-opacity ease-linear duration-300"
-          From: "opacity-100"
-          To: "opacity-0"
-      -->
+  
+    <div class="relative z-40 lg:hidden transition-opacity ease-linear duration-300 opacity-100" role="dialog" aria-modal="true">
+      
       <div class="fixed inset-0 bg-black bg-opacity-25"></div>
 
       <div class="fixed inset-0 z-40 flex">
-        <!--
-          Off-canvas menu, show/hide based on off-canvas menu state.
-
-          Entering: "transition ease-in-out duration-300 transform"
-            From: "translate-x-full"
-            To: "translate-x-0"
-          Leaving: "transition ease-in-out duration-300 transform"
-            From: "translate-x-0"
-            To: "translate-x-full"
-        -->
         <div class="relative ml-auto flex h-full w-full max-w-xs flex-col overflow-y-auto bg-white py-4 pb-6 shadow-xl">
           <div class="flex items-center justify-between px-4">
             <h2 class="text-lg font-medium text-gray-900">Filters</h2>
@@ -54,148 +60,29 @@
               </svg>
             </button>
           </div>
-
-          <!-- Filters -->
           <form class="mt-4">
-            <div class="border-t border-gray-200 pb-4 pt-4">
+            <div class="border-t border-gray-200 pb-4 pt-4" v-for="filter in filters" :key="filter.name">
               <fieldset>
                 <legend class="w-full px-2">
-                  <!-- Expand/collapse section button -->
+              
                   <button type="button" class="flex w-full items-center justify-between p-2 text-gray-400 hover:text-gray-500" aria-controls="filter-section-0" aria-expanded="false">
-                    <span class="text-sm font-medium text-gray-900">Color</span>
+                    <span class="text-sm font-medium text-gray-900">{{ filter.name }}</span>
                     <span class="ml-6 flex h-7 items-center">
-                      <!--
-                        Expand/collapse icon, toggle classes based on section open state.
-
-                        Open: "-rotate-180", Closed: "rotate-0"
-                      -->
                       <svg class="rotate-0 h-5 w-5 transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                       </svg>
                     </span>
                   </button>
                 </legend>
-                <div class="px-4 pb-2 pt-4" id="filter-section-0">
+              </fieldset>
+              <div class="px-4 pb-2 pt-4" id="filter-section-0">
                   <div class="space-y-6">
-                    <div class="flex items-center">
-                      <input id="color-0-mobile" name="color[]" value="white" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-0-mobile" class="ml-3 text-sm text-gray-500">White</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="color-1-mobile" name="color[]" value="beige" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-1-mobile" class="ml-3 text-sm text-gray-500">Beige</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="color-2-mobile" name="color[]" value="blue" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-2-mobile" class="ml-3 text-sm text-gray-500">Blue</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="color-3-mobile" name="color[]" value="brown" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-3-mobile" class="ml-3 text-sm text-gray-500">Brown</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="color-4-mobile" name="color[]" value="green" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-4-mobile" class="ml-3 text-sm text-gray-500">Green</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="color-5-mobile" name="color[]" value="purple" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-5-mobile" class="ml-3 text-sm text-gray-500">Purple</label>
+                    <div class="flex items-center" v-for="item in filter.items" :key="item.name">
+                      <input v-model="checkedNames" id="color-0-mobile" name="color[]" :value="{'name':filter.table_name,'item':item.name}" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                      <label for="color-0-mobile" class="ml-3 text-sm text-gray-500">{{ item.name }}</label>
                     </div>
                   </div>
                 </div>
-              </fieldset>
-            </div>
-            <div class="border-t border-gray-200 pb-4 pt-4">
-              <fieldset>
-                <legend class="w-full px-2">
-                  <!-- Expand/collapse section button -->
-                  <button type="button" class="flex w-full items-center justify-between p-2 text-gray-400 hover:text-gray-500" aria-controls="filter-section-1" aria-expanded="false">
-                    <span class="text-sm font-medium text-gray-900">Category</span>
-                    <span class="ml-6 flex h-7 items-center">
-                      <!--
-                        Expand/collapse icon, toggle classes based on section open state.
-
-                        Open: "-rotate-180", Closed: "rotate-0"
-                      -->
-                      <svg class="rotate-0 h-5 w-5 transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                      </svg>
-                    </span>
-                  </button>
-                </legend>
-                <div class="px-4 pb-2 pt-4" id="filter-section-1">
-                  <div class="space-y-6">
-                    <div class="flex items-center">
-                      <input id="category-0-mobile" name="category[]" value="new-arrivals" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="category-0-mobile" class="ml-3 text-sm text-gray-500">All New Arrivals</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="category-1-mobile" name="category[]" value="tees" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="category-1-mobile" class="ml-3 text-sm text-gray-500">Tees</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="category-2-mobile" name="category[]" value="crewnecks" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="category-2-mobile" class="ml-3 text-sm text-gray-500">Crewnecks</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="category-3-mobile" name="category[]" value="sweatshirts" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="category-3-mobile" class="ml-3 text-sm text-gray-500">Sweatshirts</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="category-4-mobile" name="category[]" value="pants-shorts" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="category-4-mobile" class="ml-3 text-sm text-gray-500">Pants &amp; Shorts</label>
-                    </div>
-                  </div>
-                </div>
-              </fieldset>
-            </div>
-            <div class="border-t border-gray-200 pb-4 pt-4">
-              <fieldset>
-                <legend class="w-full px-2">
-                  <!-- Expand/collapse section button -->
-                  <button type="button" class="flex w-full items-center justify-between p-2 text-gray-400 hover:text-gray-500" aria-controls="filter-section-2" aria-expanded="false">
-                    <span class="text-sm font-medium text-gray-900">Sizes</span>
-                    <span class="ml-6 flex h-7 items-center">
-                      <!--
-                        Expand/collapse icon, toggle classes based on section open state.
-
-                        Open: "-rotate-180", Closed: "rotate-0"
-                      -->
-                      <svg class="rotate-0 h-5 w-5 transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                      </svg>
-                    </span>
-                  </button>
-                </legend>
-                <div class="px-4 pb-2 pt-4" id="filter-section-2">
-                  <div class="space-y-6">
-                    <div class="flex items-center">
-                      <input id="sizes-0-mobile" name="sizes[]" value="xs" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-0-mobile" class="ml-3 text-sm text-gray-500">XS</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="sizes-1-mobile" name="sizes[]" value="s" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-1-mobile" class="ml-3 text-sm text-gray-500">S</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="sizes-2-mobile" name="sizes[]" value="m" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-2-mobile" class="ml-3 text-sm text-gray-500">M</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="sizes-3-mobile" name="sizes[]" value="l" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-3-mobile" class="ml-3 text-sm text-gray-500">L</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="sizes-4-mobile" name="sizes[]" value="xl" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-4-mobile" class="ml-3 text-sm text-gray-500">XL</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="sizes-5-mobile" name="sizes[]" value="2xl" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-5-mobile" class="ml-3 text-sm text-gray-500">2XL</label>
-                    </div>
-                  </div>
-                </div>
-              </fieldset>
             </div>
           </form>
         </div>
@@ -204,15 +91,11 @@
 
     <main class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
       <div class="border-b border-gray-200 pb-10">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900">New Arrivals</h1>
-        <p class="mt-4 text-base text-gray-500">Checkout out the latest release of Basic Tees, new and improved with four openings!</p>
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900">{{route.params.id}}</h1>
       </div>
-
       <div class="pt-12 lg:grid lg:grid-cols-3 lg:gap-x-8 xl:grid-cols-4">
         <aside>
           <h2 class="sr-only">Filters</h2>
-
-          <!-- Mobile filter dialog toggle, controls the 'mobileFilterDialogOpen' state. -->
           <button type="button" class="inline-flex items-center lg:hidden">
             <span class="text-sm font-medium text-gray-700">Filters</span>
             <svg class="ml-1 h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -222,91 +105,14 @@
 
           <div class="hidden lg:block">
             <form class="space-y-10 divide-y divide-gray-200">
-              <div>
+              <div v-for="(filter, index) in filters" :key="filter.name" v-bind:class = "(index==0)?'':'pt-10'">
                 <fieldset>
-                  <legend class="block text-sm font-medium text-gray-900">Color</legend>
+                  <legend class="block text-sm font-medium text-gray-900">{{ filter.name }}</legend>
                   <div class="space-y-3 pt-6">
-                    <div class="flex items-center">
-                      <input id="color-0" name="color[]" value="white" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-0" class="ml-3 text-sm text-gray-600">White</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="color-1" name="color[]" value="beige" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-1" class="ml-3 text-sm text-gray-600">Beige</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="color-2" name="color[]" value="blue" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-2" class="ml-3 text-sm text-gray-600">Blue</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="color-3" name="color[]" value="brown" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-3" class="ml-3 text-sm text-gray-600">Brown</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="color-4" name="color[]" value="green" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-4" class="ml-3 text-sm text-gray-600">Green</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="color-5" name="color[]" value="purple" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="color-5" class="ml-3 text-sm text-gray-600">Purple</label>
-                    </div>
-                  </div>
-                </fieldset>
-              </div>
-              <div class="pt-10">
-                <fieldset>
-                  <legend class="block text-sm font-medium text-gray-900">Category</legend>
-                  <div class="space-y-3 pt-6">
-                    <div class="flex items-center">
-                      <input id="category-0" name="category[]" value="new-arrivals" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="category-0" class="ml-3 text-sm text-gray-600">All New Arrivals</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="category-1" name="category[]" value="tees" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="category-1" class="ml-3 text-sm text-gray-600">Tees</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="category-2" name="category[]" value="crewnecks" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="category-2" class="ml-3 text-sm text-gray-600">Crewnecks</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="category-3" name="category[]" value="sweatshirts" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="category-3" class="ml-3 text-sm text-gray-600">Sweatshirts</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="category-4" name="category[]" value="pants-shorts" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="category-4" class="ml-3 text-sm text-gray-600">Pants &amp; Shorts</label>
-                    </div>
-                  </div>
-                </fieldset>
-              </div>
-              <div class="pt-10">
-                <fieldset>
-                  <legend class="block text-sm font-medium text-gray-900">Sizes</legend>
-                  <div class="space-y-3 pt-6">
-                    <div class="flex items-center">
-                      <input id="sizes-0" name="sizes[]" value="xs" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-0" class="ml-3 text-sm text-gray-600">XS</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="sizes-1" name="sizes[]" value="s" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-1" class="ml-3 text-sm text-gray-600">S</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="sizes-2" name="sizes[]" value="m" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-2" class="ml-3 text-sm text-gray-600">M</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="sizes-3" name="sizes[]" value="l" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-3" class="ml-3 text-sm text-gray-600">L</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="sizes-4" name="sizes[]" value="xl" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-4" class="ml-3 text-sm text-gray-600">XL</label>
-                    </div>
-                    <div class="flex items-center">
-                      <input id="sizes-5" name="sizes[]" value="2xl" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                      <label for="sizes-5" class="ml-3 text-sm text-gray-600">2XL</label>
+                    <div class="flex items-center relative" v-for="item in filter.items" :key="item.name">
+                      <input v-model="checkedNames" :id="item.name" :name="item.name" :value="{'name':filter.table_name,'item':item.name}" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                      <label :for="item.name" class="ml-3 text-sm text-gray-600">{{ item.name }}</label>
+                      <span class="right-0 absolute text-sm text-gray-600">{{ item.count }}</span>
                     </div>
                   </div>
                 </fieldset>
@@ -314,14 +120,11 @@
             </form>
           </div>
         </aside>
-
-        <!-- Product grid -->
         <div class="mt-6 lg:col-span-2 lg:mt-0 xl:col-span-3">
-          <!-- Your content -->
+          <ProductMap :products="products" />
         </div>
       </div>
     </main>
   </div>
 </div>
-
 </template>
