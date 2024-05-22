@@ -10,6 +10,12 @@ use App\Http\Requests\StoreProductRequest;
 
 class ProductRepository
 {
+    public $filters;
+
+    function __construct()
+    {
+        $this->filters = ['brand', 'model', 'delivery_time', 'condition', 'price'];
+    }
     public function getGroupedItems($arr, $name)
     {
         return $arr->groupBy($name)->map(function ($products, $brand) {
@@ -37,30 +43,40 @@ class ProductRepository
                 return "";
         }
     }
-    public function getAllFiltersAndProducts($path, Request $request)
+    public function getFilteredByParams($query, Request $request)
     {
-        $category = Category::where('path', $path)->firstOrFail();
-        $productsQuery = Product::where('category_id', $category->id);
-
         $parameters = $request->all();
 
         foreach ($parameters as $key => $param) {
             $paramArr = explode('%', $param);
-            $productsQuery->whereIn($key, $paramArr);
+            $query->whereIn($key, $paramArr);
         }
 
-        $filters = ['brand', 'model', 'delivery_time', 'condition', 'price'];
-
-        $products = $productsQuery->get();
-
-        $groupedFilters = collect($filters)->map(function ($filter) use ($parameters, $category, $products) {
+        return $query->get();
+    }
+    public function filters($filteredProducts, $category, Request $request)
+    {
+        $parameters = $request->all();
+        $grouped = collect($this->filters)->map(function ($filter) use ($parameters, $category, $filteredProducts) {
             if (array_key_first($parameters) === $filter) {
                 $allProducts = Product::where('category_id', $category->id)->get();
                 return $this->getGroupedItems($allProducts, $filter);
             } else {
-                return $this->getGroupedItems($products, $filter);
+                return $this->getGroupedItems($filteredProducts, $filter);
             }
         });
+        return $grouped;
+    }
+    public function getAllFiltersAndProducts($path, Request $request)
+    {
+        $category = Category::where('path', $path)->firstOrFail();
+
+        $productsQuery = Product::where('category_id', $category->id);
+
+        $filters = $this->filters;
+        $products = $this->getFilteredByParams($productsQuery, $request);
+
+        $groupedFilters = $this->filters($products, $category, $request);
 
         return response()->json([
             'products' => $products,
@@ -104,6 +120,36 @@ class ProductRepository
             }
         } else {
             return response()->json(['message' => 'Klaida! Xml formatas netinkamas'], 400);
+        }
+    }
+
+    public function create(StoreProductRequest $request)
+    {
+        try {
+            $validatedData = $request->validated();
+
+            $product = Product::create($validatedData);
+
+            return response()->json([
+                'message' => 'Produktas sukurtas sėkmingai!',
+                'product' => $product
+            ], 201);
+        } catch (\Illuminate\Database\QueryException $e) {
+            $errorCode = $e->errorInfo[1];
+
+            if ($errorCode === 1062) {
+                return response()->json([
+                    'message' => 'Validation error.',
+                    'errors' => [
+                        'img_url' => ['Klaida! Toks nuotraukas pavadinimas jau naudojamas!'],
+                    ],
+                ], 422);
+            }
+
+            return response()->json([
+                'message' => 'Klaida! Nepavyko sukurti produkto!',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

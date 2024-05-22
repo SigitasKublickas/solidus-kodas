@@ -40,32 +40,7 @@ class ProductController extends Controller
     }
     public function store(StoreProductRequest $request)
     {
-        try {
-            $validatedData = $request->validated();
-
-            $product = Product::create($validatedData);
-
-            return response()->json([
-                'message' => 'Produktas sukurtas sėkmingai!',
-                'product' => $product
-            ], 201);
-        } catch (\Illuminate\Database\QueryException $e) {
-            $errorCode = $e->errorInfo[1];
-
-            if ($errorCode === 1062) {
-                return response()->json([
-                    'message' => 'Validation error.',
-                    'errors' => [
-                        'img_url' => ['Klaida! Toks nuotraukas pavadinimas jau naudojamas!'],
-                    ],
-                ], 422);
-            }
-
-            return response()->json([
-                'message' => 'Klaida! Nepavyko sukurti produkto!',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        return $this->productRepository->create($request);
     }
 
     /**
