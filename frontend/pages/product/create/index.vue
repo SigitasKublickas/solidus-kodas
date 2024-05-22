@@ -1,15 +1,26 @@
 <script setup lang="ts">
 
 import axios from 'axios';
-
-const {data: categories} = await useFetch<{value:string, name:string}[]>('http://localhost:8000/categories/get/withoutChild');
+const categories = ref<{value:string, name:string}[]>([]);
+(async ()=>{
+    try{
+        const {data: result} = await useFetch<{value:string, name:string}[]>('http://localhost:8000/categories/get/withoutChild');
+        if(result&& result.value){
+            categories.value = result.value;
+        }
+    }catch(e){
+        console.error(e);
+    }
+})();
 
 const conditionArr=[{value:"New",name:"Naujas"},{value:"Used",name:"Naudotas"},{value:"Refurbished",name:"Atnaujintas"}];
 
 interface Indexable {
   [key: string]: string | number; 
 }
+
 const file = ref<File | null>(null);
+
 const formData = ref<Indexable>({
   name: "",
   desc: "",
