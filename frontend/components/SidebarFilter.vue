@@ -18,8 +18,8 @@ const checkedNames = ref<{name:string,item:string}[]>(getParamsArrayFromObj(para
 const fetchAndSetProductsAndFilters = async (id: string | string [], params: string) => {
     try {
       const data = await getFilteredData(id, params);
-      products.value = data[0].products;
-      filters.value = data[0].filters;
+      products.value = data.products;
+      filters.value = data.filters;
     } catch (error) {
         console.error("Error fetching data:", error);
     }

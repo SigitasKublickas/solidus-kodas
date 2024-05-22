@@ -16,7 +16,6 @@ Route::get('/categories/get/withoutChild', [CategoryController::class, 'getWitho
 
 //products
 Route::apiResource('products', ProductController::class);
-Route::get('/products/category/{id}', [ProductController::class, 'showAllByPath']);
 Route::get('/products/filter/{id}', [ProductController::class, 'index']);
 Route::post('/products/store/xml', [ProductController::class, 'storeXml']);
 Route::get('/api/csrf-token', function () {
