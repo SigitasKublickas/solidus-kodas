@@ -31,7 +31,7 @@ export default defineEventHandler(async (event: H3Event) => {
   const uploadDir = path.join(process.cwd(), 'public' ,'images');
   await fs.mkdir(uploadDir, { recursive: true });
 
-  const fileName = `${Date.now()}-${file.filename}`;
+  const fileName = `${file.filename}`;
   const filePath = path.join(uploadDir, fileName);
 
   await fs.writeFile(filePath, file.data);

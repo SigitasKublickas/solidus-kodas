@@ -2,25 +2,20 @@
 import axios from 'axios';
 const file = ref<File | null>(null);
 const formXmlData = ref();
-    async function onSubmitXML(e:any){
-    e.preventDefault();
-
-    let fName = "";
-    await useFetch(
-        "http://localhost:8000/sanctum/csrf-cookie",
-        {credentials :"include"}
-    );
-
+const uploadImage  = async ()=>{
     try {
-        const response = await axios.post<{ filename: string, filepath: string }>('/api/upload', {file:file.value}, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-        });
-            fName = response.data.filename;
-        } catch (error) {
-            console.error('Error uploading file:', error);
-    }
+       const response = await axios.post<{ filename: string, filepath: string }>('/api/upload', {file:file.value}, {
+       headers: {
+           'Content-Type': 'multipart/form-data'
+       }
+       });
+       } catch (error) {
+           console.error('Error uploading file:', error);
+   }
+}
+
+async function onSubmitXML(e:any){
+    e.preventDefault();
 
     await useFetch(
         "http://localhost:8000/sanctum/csrf-cookie",
@@ -41,7 +36,8 @@ const formXmlData = ref();
             body:formXmlData.value
         }
     );
-    console.log(data);
+    console.log({data});
+        if(data.value){uploadImage()}
     }
     catch(error){
         console.error(error);
@@ -55,34 +51,37 @@ const onFileChange = (event: Event) => {
   }
 };
 watch(file, ()=>{
-    xmlSample=`
-<products>
-    <product>
-        <name>Pavadinimas</name>
-        <desc>Aprašymas</desc>
-        <price>Kaina (skaičius)</price>
-        <delivery_time>Pristatymo laikas (skaičius)</delivery_time>
-        <stock>Kiekis (skaičius)</stock>
-        //automatiškai užpildyta
-        <img_url>${file.value?.name}</img_url>
-        <category_id>Kategorijos id</category_id>
-        <brand>Prekės ženklas</brand>
-        <model>Modelis</model>
-        <condition>Būklė</condition>
-    </product>
-</products>
-`;
+    if(file.value){
+        xmlSample=`
+                <products>
+                    <product>
+                        <name>Pavadinimas</name>
+                        <desc>Aprašymas</desc>
+                        <price>Kaina (skaičius)</price>
+                        <delivery_time>Pristatymo laikas (skaičius)</delivery_time>
+                        <stock>Kiekis (skaičius)</stock>
+                        //automatiškai užpildyta
+                        <img_url>${file.value.name}</img_url>
+                        <category_id>Kategorijos id</category_id>
+                        <brand>Prekės ženklas</brand>
+                        <model>Modelis</model>
+                        <condition>Būklė</condition>
+                    </product>
+                </products>
+            `;
+    }
 })
+console.log(file);
 </script>
 
 <template>
-    <div class="flex justify-center content-center w-full h-auto flex-col">
-        <div class="container pt-12 p-2 flex justify-center items-center">
-            <h1 class="text-gray-900 text-3xl title-font font-medium mb-1">Sukurti Produktą Su XML</h1>
-        </div>
-        <div class="container pt-12 grid gap-6 mb-6 md:grid-cols-2 p-2">
-            <NuxtLink to="/product/create" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sukurti su įvestimis</NuxtLink>
-        </div>
+   <div class="flex justify-center content-center w-full h-auto flex-col flex-wrap pt-12">
+    <div class="container flex justify-center items-center flex-col">
+        
+            <h1 class="text-gray-900 text-3xl title-font font-medium mb-1 pt-12">Sukurti Produktą Su XML</h1>
+        
+        
+            <NuxtLink to="/product/create" class="text-white mt-12 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sukurti su įvestimis</NuxtLink>
         <div class="container pt-12 gap-6 mb-6 md:grid-cols-2 p-2">
             <div class="pt-12">
                 <label for="img_url" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Produkto Nuotrauka</label>
@@ -99,7 +98,7 @@ watch(file, ()=>{
                     <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sukurti</button>
                 </div> 
             </form>
-
+            </div>
         </div>
     </div>
 </template>

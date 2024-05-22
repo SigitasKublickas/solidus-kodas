@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
@@ -30,6 +31,7 @@ class ProductController extends Controller
         $groupedProductsByModel = $products->groupBy('model');
         $groupedProductsByDeliveryTime = $products->groupBy('delivery_time');
         $groupedProductsByCondition = $products->groupBy('condition');
+
 
 
         $brandCounts = $groupedProductsByBrand->map(function ($products, $brand) {
@@ -57,11 +59,6 @@ class ProductController extends Controller
                 'count' => $products->count(),
             ];
         });
-
-
-        // $maxPrice = $products->max('price');
-        // $minPrice = $products->min('price');
-
 
         return response()->json([
             [
@@ -120,25 +117,20 @@ class ProductController extends Controller
                 print_r($array);
 
                 $products = isset($array['product'][0]) ? $array['product'] : [$array['product']];
+                $requestClassInstance = new StoreProductRequest();
+                $rules = $requestClassInstance->rules();
                 foreach ($products as $item) {
-                    $validatedData = $request->validated([
-                        'name' => $item['name'],
-                        'desc' => $item['desc'],
-                        'price' => $item['price'],
-                        'delivery_time' => $item['delivery_time'],
-                        'stock' => $item['stock'],
-                        'img_url' => $item['img_url'],
-                        'category_id' => $item['category_id'],
-                        'brand' => $item['brand'],
-                        'model' => $item['model'],
-                        'condition' => $item['condition'],
-                    ]);
-                    Product::create($validatedData);
+                    $validator = Validator::make($item, $rules);
+                    if ($validator->fails()) {
+                        return response()->json(['message' => $validator->errors()], 400);
+                    }
+
+                    Product::create($validator->validated());
                 }
 
                 return response()->json(['message' => 'Sėkmingai sukurta'], 200);
             } catch (\Exception $e) {
-                return response()->json(['message' => 'Klaida! Patikrinkite ar suvedėte teisinga informacija'], 400);
+                return response()->json(['message' => $e->getMessage()], 400);
             }
         } else {
             return response()->json(['message' => 'Klaida! Xml formatas netinkamas'], 400);

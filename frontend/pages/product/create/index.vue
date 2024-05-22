@@ -78,45 +78,44 @@ const onFileChange = (event: Event) => {
 </script>
 
 <template>
-<div class="flex justify-center content-center w-full h-auto flex-col">
-    <div class="container pt-12 p-2 flex justify-center items-center">
-            <h1 class="text-gray-900 text-3xl title-font font-medium mb-1">Sukurti Produktą</h1>
-        </div>
-        <div class="container pt-12 grid gap-6 mb-6 md:grid-cols-2 p-2">
-            <NuxtLink to="/product/create/xml" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sukurti su xml</NuxtLink>
-        </div>
-    <div class="container pt-12">
-        <form @submit="onSubmit">
-         
-            <div class="grid gap-6 mb-6 md:grid-cols-2 p-2">
-                <Input type="text" name="name" placeholder="Pavadinimas" @change="onChange"/>
-                <Input type="text" name="desc" placeholder="Aprašymas" @change="onChange" />
-                <Input type="number" name="price" placeholder="Kaina" @change="onChange"  />
-                <Input type="number" name="delivery_time" placeholder="Pristatymo laikas" @change="onChange"  />
-                <div>
-                    <label for="img_url" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Produkto Nuotrauka</label>
-                    <input type="file" accept="image/png" @change="onFileChange" id="first_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required />
+<div class="flex justify-center content-center w-full h-auto flex-col flex-wrap">
+    <div class="container flex justify-center items-center flex-col">
+    <h1 class="text-gray-900 text-3xl title-font font-medium mb-1 pt-12">Sukurti Produktą</h1>
+    <NuxtLink to="/product/create/xml" class= "text-white mt-12 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sukurti su xml</NuxtLink>
+    
+        <div class="container pt-12">
+            <form @submit="onSubmit">
+            
+                <div class="grid gap-6 mb-6 md:grid-cols-2 p-2">
+                    <Input type="text" name="name" placeholder="Pavadinimas" @change="onChange"/>
+                    <Input type="text" name="desc" placeholder="Aprašymas" @change="onChange" />
+                    <Input type="number" name="price" placeholder="Kaina" @change="onChange"  />
+                    <Input type="number" name="delivery_time" placeholder="Pristatymo laikas" @change="onChange"  />
+                    <div>
+                        <label for="img_url" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Produkto Nuotrauka</label>
+                        <input type="file" accept="image/png" @change="onFileChange" id="first_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required />
+                    </div>
+                    <Input type="number" name="stock" placeholder="Kiekis" @change="onChange"/>
+                    <Input type="text" name="brand" placeholder="Prekės ženklas" @change="onChange"/>
+                    <Input type="text" name="model" placeholder="Modelis" @change="onChange"/>
+                    <div>
+                    <label for="condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Būklė</label>
+                    <select  v-model="formData.condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <option  v-for='item in conditionArr' :key="item.name" :value="item.value">{{ item.name }}</option>
+                    </select>
                 </div>
-                <Input type="number" name="stock" placeholder="Kiekis" @change="onChange"/>
-                <Input type="text" name="brand" placeholder="Prekės ženklas" @change="onChange"/>
-                <Input type="text" name="model" placeholder="Modelis" @change="onChange"/>
-                <div>
-                <label for="condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Būklė</label>
-                <select  v-model="formData.condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                    <option  v-for='item in conditionArr' :key="item.name" :value="item.value">{{ item.name }}</option>
-                </select>
-            </div>
-            </div>
-            <div class="mb-6 p-2">
-                <label for="category_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Kategorija</label>
-                <select  v-model="formData.category_id" name="category_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                    <option  v-for='item in categories' :key="item.name" :value="item.value">{{ item.name }}</option>
-                </select>
-            </div> 
-            <div class="mb-6 p-2">
-                <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sukurti</button>
-            </div> 
-        </form>
+                </div>
+                <div class="mb-6 p-2">
+                    <label for="category_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Kategorija</label>
+                    <select  v-model="formData.category_id" name="category_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <option  v-for='item in categories' :key="item.name" :value="item.value">{{ item.name }}</option>
+                    </select>
+                </div> 
+                <div class="mb-6 p-2">
+                    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sukurti</button>
+                </div> 
+            </form>
+        </div>
     </div>
 </div>
 </template>
