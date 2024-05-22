@@ -31,6 +31,7 @@ const props = defineProps({
             <div class="p-6">
                 <h1 class="title-font text-lg font-medium text-gray-900 mb-3">{{props.name}}</h1>
                 <p>{{ props.desc }}</p>
+                <p>{{ props.price }} €</p>
             </div>
         </NuxtLink>
     </div>

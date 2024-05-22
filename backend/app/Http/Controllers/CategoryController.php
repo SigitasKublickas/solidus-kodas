@@ -14,26 +14,37 @@ class CategoryController extends Controller
      */
     public function index($id = null)
     {
-
-
         if ($id == null) {
-            $categories = Category::with([
-                'cat_childs' => function ($query) {
-                    $query->with('cat_childs');
-                }
-            ])->whereNull('parent_id')->get();
+            // Get all top-level categories with their child categories recursively
+            $categories = Category::with('cat_childs')
+                ->whereNull('parent_id')
+                ->get()
+                ->map(function ($category) {
+                    return $this->getCategoryWithChildren($category);
+                });
+
             return response()->json($categories);
         } else {
-            $categoryId = Category::where("path", $id)->first();
-            $category = Category::with(['cat_childs'])->findOrFail($categoryId->id);
+            // Find the category by path and load its child categories recursively
+            $category = Category::where("path", $id)->firstOrFail();
 
-            if ($category->cat_childs->isNotEmpty()) {
-                return response()->json($category->cat_childs);
-            }
+            $categoryTree = $this->getCategoryWithChildren($category);
 
+            return response()->json($categoryTree);
+        }
+    }
+
+    private function getCategoryWithChildren($category)
+    {
+        $category->load('cat_childs');
+
+        if ($category->cat_childs->isNotEmpty()) {
+            $category->cat_childs = $category->cat_childs->map(function ($child) {
+                return $this->getCategoryWithChildren($child);
+            });
         }
 
-
+        return $category;
     }
 
     /**

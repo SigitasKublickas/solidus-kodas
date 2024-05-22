@@ -18,7 +18,7 @@ const props = defineProps({
   }
 });
 
-
+console.log(props.cat_childs);
 </script>
 
 <template>
@@ -27,7 +27,7 @@ const props = defineProps({
           <img class="lg:h-48 md:h-36 w-full object-contain object-center " :src='props.img':alt="`${props.name}`">
           <div class="p-6">
             <h1 class="title-font text-lg font-medium text-gray-900 mb-3">{{props.name}}</h1>
-            <ul v-for="item in $props.cat_childs" :key="item.id">
+            <ul v-for="item in props.cat_childs" :key="item.id">
                 <li><NuxtLink :to="`/category/${item.path}`">{{ item.name }}</NuxtLink></li>
             </ul>
           </div>

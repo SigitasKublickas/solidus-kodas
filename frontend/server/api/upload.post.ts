@@ -21,12 +21,12 @@ export default defineEventHandler(async (event: H3Event) => {
     });
   }
 
-  if (file.type !== 'image/png') {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Only PNG files are allowed',
-    });
-  }
+  // if (file.type !== 'image/png' && file.type !== 'image/jpg') {
+  //   throw createError({
+  //     statusCode: 400,
+  //     statusMessage: 'Only PNG and JPG files are allowed',
+  //   });
+  // }
 
   const uploadDir = path.join(process.cwd(), 'public' ,'images');
   await fs.mkdir(uploadDir, { recursive: true });

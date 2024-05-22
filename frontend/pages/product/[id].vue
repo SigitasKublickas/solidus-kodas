@@ -22,7 +22,7 @@ const product = ref<Product>();
 <section class="text-gray-600 body-font overflow-hidden" v-if="product">
   <div class="container px-5 py-24 mx-auto">
     <div class="lg:w-4/5 mx-auto flex flex-wrap">
-      <img alt="ecommerce" class="lg:w-1/2 w-full lg:h-auto h-64 object-contain object-center rounded" :src="`/images/${product.img_url}`">
+      <img alt="ecommerce" class="lg:w-1/2 w-full  h-64 object-contain object-center rounded" :src="`/images/${product.img_url}`">
       <div class="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-6 lg:mt-0">
         <h2 class="text-sm title-font text-gray-500 tracking-widest">{{product.brand}}</h2>
         <h1 class="text-gray-900 text-3xl title-font font-medium mb-1">{{product.model}}</h1>

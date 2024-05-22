@@ -14,6 +14,18 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function getGroupedItems($arr, $name)
+    {
+        $group = $arr->groupBy($name);
+        return $group->map(function ($products, $brand) {
+            return [
+                'name' => $brand,
+                'count' => $products->count(),
+            ];
+        })->values();
+
+    }
+
     public function index($category_path, Request $request)
     {
         $category = Category::where('path', $category_path)->first();
@@ -24,71 +36,59 @@ class ProductController extends Controller
             $paramArr = explode("%", $param);
             $productsQuery->whereIn($key, $paramArr);
         }
+        $filters = ["brand", "model", "delivery_time", "condition", "price"];
 
         $products = $productsQuery->get();
 
-        $groupedProductsByBrand = $products->groupBy('brand');
-        $groupedProductsByModel = $products->groupBy('model');
-        $groupedProductsByDeliveryTime = $products->groupBy('delivery_time');
-        $groupedProductsByCondition = $products->groupBy('condition');
+        $group = [];
+        foreach ($filters as $item) {
+            if (array_key_first($parameters) == $item) {
+                $pro = Product::where("category_id", $category->id)->get();
+                array_push($group, $this->getGroupedItems($pro, $item));
+            } else {
+                array_push($group, $this->getGroupedItems($products, $item));
+            }
+        }
 
 
 
-        $brandCounts = $groupedProductsByBrand->map(function ($products, $brand) {
-            return [
-                'name' => $brand,
-                'count' => $products->count(),
-            ];
-        });
-        $modelCounts = $groupedProductsByModel->map(function ($products, $model) {
-            return [
-                'name' => $model,
-                'count' => $products->count(),
-            ];
-        });
 
-        $deliveryCount = $groupedProductsByDeliveryTime->map(function ($products, $time) {
-            return [
-                'name' => $time,
-                'count' => $products->count(),
-            ];
-        });
-        $conditionCount = $groupedProductsByCondition->map(function ($products, $condition) {
-            return [
-                'name' => $condition,
-                'count' => $products->count(),
-            ];
-        });
-
-        return response()->json([
+        return response()->json(
             [
-                "products" => $products,
-                "filters" => [
-                    [
-                        "name" => "Gamintojas",
-                        'table_name' => "brand",
-                        "items" => $brandCounts->values(),
-                    ],
-                    [
-                        "name" => "Modelis",
-                        'table_name' => "model",
-                        "items" => $modelCounts->values(),
-                    ],
-                    [
-                        "name" => "Pristatymo laikas",
-                        'table_name' => "delivery_time",
-                        "items" => $deliveryCount->values(),
-                    ],
-                    [
-                        "name" => "Būklė",
-                        'table_name' => "condition",
-                        "items" => $conditionCount->values(),
+                [
+                    "products" => $products,
+                    "filters" => [
+                        [
+                            "name" => "Gamintojas",
+                            'table_name' => "brand",
+                            "items" => $group[0]
+                        ],
+                        [
+                            "name" => "Modelis",
+                            'table_name' => "model",
+                            "items" => $group[1],
+                        ],
+                        [
+                            "name" => "Pristatymo laikas",
+                            'table_name' => "delivery_time",
+                            "items" => $group[2],
+                        ],
+                        [
+                            "name" => "Būklė",
+                            'table_name' => "condition",
+                            "items" => $group[3],
+                        ],
+                        [
+                            "name" => "Kaina",
+                            'table_name' => "price",
+                            "items" => $group[4],
+                        ]
                     ]
-                ]
-            ],
+                ],
 
 
-        ]);
+            ]
+        );
 
     }
 
