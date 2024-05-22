@@ -42,7 +42,8 @@ watch(checkedNames, () => {
 
 
 <template>
-<div class="bg-white">
+  <div v-if="!products && !filters"></div>
+  <div v-else class="bg-white">
   <div>
   
     <div class="relative z-40 lg:hidden transition-opacity ease-linear duration-300 opacity-100" role="dialog" aria-modal="true">

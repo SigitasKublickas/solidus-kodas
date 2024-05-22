@@ -43,7 +43,6 @@ class CategoryController extends Controller
                 return $this->getCategoryWithChildren($child);
             });
         }
-
         return $category;
     }
 
