@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\ProductRepository;
+use App\Http\Services\ProductService;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
@@ -11,15 +12,21 @@ use App\Http\Requests\UpdateProductRequest;
 class ProductController extends Controller
 {
     protected $productRepository;
+    protected $productService;
 
-    public function __construct(ProductRepository $productRepository)
+    public function __construct(ProductRepository $productRepository, ProductService $productService)
     {
         $this->productRepository = $productRepository;
+        $this->productService = $productService;
     }
 
-    public function index($path, Request $request)
+    public function index()
     {
-        return $this->productRepository->getAllFiltersAndProducts($path, $request);
+        return $this->productRepository->getAllProducts();
+    }
+    public function getFiltersAndProducts($path, Request $request)
+    {
+        return $this->productService->getAllFiltersAndProducts($path, $request);
     }
 
     /**
@@ -36,11 +43,12 @@ class ProductController extends Controller
 
     public function storeXml(Request $request)
     {
-        return $this->productRepository->createProductXml($request);
+        return $this->productService->createProductXml($request);
     }
+
     public function store(StoreProductRequest $request)
     {
-        return $this->productRepository->create($request);
+        return $this->productService->create($request);
     }
 
     /**
