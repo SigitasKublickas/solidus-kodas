@@ -50,7 +50,7 @@ class CategoryController extends Controller
     }
     public function getWithoutChild()
     {
-        $categories = $this->categoryRepository->getTopLevelCategories();
+        $categories = $this->categoryRepository->getWithoutChilds();
 
         return response()->json($categories);
     }
