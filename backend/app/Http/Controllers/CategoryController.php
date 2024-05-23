@@ -3,46 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Repositories\CategoryRepository;
+use App\Http\Services\CategoryService;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index($id = null)
+    protected $categoryRepository;
+    protected $categoryService;
+    function __construct(CategoryRepository $categoryRepository, CategoryService $categoryService)
     {
-        if ($id == null) {
-            // Get all top-level categories with their child categories recursively
-            $categories = Category::with('cat_childs')
-                ->whereNull('parent_id')
-                ->get()
-                ->map(function ($category) {
-                    return $this->getCategoryWithChildren($category);
-                });
-
-            return response()->json($categories);
-        } else {
-            // Find the category by path and load its child categories recursively
-            $category = Category::where("path", $id)->firstOrFail();
-
-            $categoryTree = $this->getCategoryWithChildren($category);
-
-            return response()->json($categoryTree);
-        }
+        $this->categoryService = $categoryService;
+        $this->categoryRepository = $categoryRepository;
     }
-
-    private function getCategoryWithChildren($category)
+    public function index($path = null)
     {
-        $category->load('cat_childs');
+        $categories = $path == null ? $this->categoryRepository->getTopLevelCategories() : $this->categoryRepository->getCategoriesTree($path);
 
-        if ($category->cat_childs->isNotEmpty()) {
-            $category->cat_childs = $category->cat_childs->map(function ($child) {
-                return $this->getCategoryWithChildren($child);
-            });
-        }
-        return $category;
+        return response()->json($categories);
+
     }
 
     /**
@@ -66,34 +46,13 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
-        $category = Category::with([
-            'cat_childs' => function ($query) {
-                $query->with('cat_childs'); // Recursive loading for deeper nesting
-            }
-        ])->find($category->id);
-        return response()->json($category);
-    }
-    public function showCategoryOrProductsData($category_path)
-    {
-        $categoryId = Category::where("path", $category_path)->first();
-        $category = Category::with(['cat_childs'])->findOrFail($categoryId->id);
-
-        if ($category->cat_childs->isNotEmpty()) {
-            return response()->json($category->cat_childs);
-        }
 
     }
     public function getWithoutChild()
     {
-        $categories = Category::doesntHave('cat_childs')->get();
-        $formattedCategories = $categories->map(function ($category) {
-            return [
-                'value' => $category->id,
-                'name' => $category->name
-            ];
-        });
+        $categories = $this->categoryRepository->getTopLevelCategories();
 
-        return response()->json($formattedCategories);
+        return response()->json($categories);
     }
     /**
      * Show the form for editing the specified resource.

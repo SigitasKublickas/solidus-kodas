@@ -11,7 +11,6 @@ Route::get('/', function () {
 
 // categories
 Route::get('/categories/{id?}', [CategoryController::class, "index"]);
-Route::get('/categories/showChildCategories/{id}', [CategoryController::class, 'showCategoryOrProductsData']);
 Route::get('/categories/get/withoutChild', [CategoryController::class, 'getWithoutChild']);
 
 //products

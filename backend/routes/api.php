@@ -10,8 +10,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 Route::apiResource('categories', CategoryController::class);
 Route::get('/products/category/{id}', [ProductController::class, 'showAllByPath']);
-Route::get('/categories/showChildCategories/{id}', [CategoryController::class, 'showCategoryOrProductsData']);
-Route::get('/categories/get/withoutChild', [CategoryController::class, 'getWithoutChild']); // Expected route
+Route::get('/categories/get/withoutChild', [CategoryController::class, 'getWithoutChild']);
 Route::apiResource('products', ProductController::class);
 Route::get('/api/csrf-token', function () {
     return response()->json(['csrf_token' => csrf_token()]);
