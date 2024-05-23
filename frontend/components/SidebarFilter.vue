@@ -12,6 +12,7 @@ const paramsToString = getParamsUrlString(getParamsArrayFromObj(paramsFromUrl));
 const products = ref<Product[]>([]);
 const filters = ref<Filter[]>([]);
 const categoryName = ref<string>("")
+const expand = ref<boolean>(false)
 
 const checkedNames = ref<{name:string,item:string}[]>(getParamsArrayFromObj(paramsFromUrl));
 
@@ -40,15 +41,20 @@ watch(checkedNames, () => {
   
   fetchAndSetProductsAndFilters(route.params.id, urlParams);
 });
+
+const toggleButton = () => {
+  expand.value= !expand.value;
+}
+const clearCheckNames = () =>{
+  checkedNames.value = [];
+}
 </script>
 
 
 <template>
   <div v-if="!products && !filters"></div>
   <div v-else class="bg-white">
-  <div>
-  
-    <div class="relative z-40 lg:hidden transition-opacity ease-linear duration-300 opacity-100" role="dialog" aria-modal="true">
+    <div v-if="expand" class="relative z-40 lg:hidden transition-opacity ease-linear duration-300 opacity-100" role="dialog" aria-modal="true">
       
       <div class="fixed inset-0 bg-black bg-opacity-25"></div>
 
@@ -56,7 +62,7 @@ watch(checkedNames, () => {
         <div class="relative ml-auto flex h-full w-full max-w-xs flex-col overflow-y-auto bg-white py-4 pb-6 shadow-xl">
           <div class="flex items-center justify-between px-4">
             <h2 class="text-lg font-medium text-gray-900">Filters</h2>
-            <button type="button" class="-mr-2 flex h-10 w-10 items-center justify-center p-2 text-gray-400 hover:text-gray-500">
+            <button @click="toggleButton" type="button" class="-mr-2 flex h-10 w-10 items-center justify-center p-2 text-gray-400 hover:text-gray-500">
               <span class="sr-only">Close menu</span>
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -64,21 +70,20 @@ watch(checkedNames, () => {
             </button>
           </div>
           <form class="mt-4">
+            <div class="border-t border-gray-200 pb-4 pt-4 flex-wrap flex items-center justify-center">
+              <button @click="clearCheckNames" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                Valyti Filtrus
+              </button>
+            </div>
             <div class="border-t border-gray-200 pb-4 pt-4" v-for="filter in filters" :key="filter.name">
               <fieldset>
                 <legend class="w-full px-2">
-              
                   <button type="button" class="flex w-full items-center justify-between p-2 text-gray-400 hover:text-gray-500" aria-controls="filter-section-0" aria-expanded="false">
                     <span class="text-sm font-medium text-gray-900">{{ filter.name }}</span>
-                    <span class="ml-6 flex h-7 items-center">
-                      <svg class="rotate-0 h-5 w-5 transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                      </svg>
-                    </span>
                   </button>
                 </legend>
               </fieldset>
-              <div class="px-4 pb-2 pt-4" id="filter-section-0">
+              <div class="px-4 pb-2 pt-4 translate-x-0">
                   <div class="space-y-6">
                     <div class="flex items-center" v-for="item in filter.items" :key="item.name">
                       <input v-model="checkedNames" id="color-0-mobile" name="color[]" :value="{'name':filter.table_name,'item':item.name}" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
@@ -99,7 +104,7 @@ watch(checkedNames, () => {
       <div class="pt-12 lg:grid lg:grid-cols-3 lg:gap-x-8 xl:grid-cols-4">
         <aside>
           <h2 class="sr-only">Filters</h2>
-          <button type="button" class="inline-flex items-center lg:hidden">
+          <button @click="toggleButton" type="button" class="inline-flex items-center lg:hidden">
             <span class="text-sm font-medium text-gray-700">Filters</span>
             <svg class="ml-1 h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
@@ -108,7 +113,12 @@ watch(checkedNames, () => {
 
           <div class="hidden lg:block">
             <form class="space-y-10 divide-y divide-gray-200">
-              <div v-for="(filter, index) in filters" :key="filter.name" v-bind:class = "(index==0)?'':'pt-10'">
+              <div class="border-t border-gray-200 flex-wrap flex items-center justify-center">
+              <button @click="clearCheckNames" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-10">
+                Valyti Filtrus
+              </button>
+            </div>
+              <div v-for="(filter, index) in filters" :key="filter.name" class="pt-10">
                 <fieldset>
                   <legend class="block text-sm font-medium text-gray-900">{{ filter.name }}</legend>
                   <div class="space-y-3 pt-6">
@@ -128,6 +138,5 @@ watch(checkedNames, () => {
         </div>
       </div>
     </main>
-  </div>
 </div>
 </template>

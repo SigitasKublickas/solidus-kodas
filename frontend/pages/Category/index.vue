@@ -11,12 +11,23 @@ const categories = ref<Category>();
     console.error(e);
   }
 })();
-console.log(categories);
+const notFound = ref<string>("")
+  watch(
+  () => categories,
+  (newProduct) => {
+    if (!newProduct) {
+      setTimeout(() => {
+        notFound.value = 'Kategoriju nerasta!';
+      }, 600);
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
   <section class="text-gray-600 body-font">
-    <div v-if="!categories">Nerasta</div>
+    <div v-if="!categories">{{notFound}}</div>
     <CategoryMap v-else :category="categories"/>
   </section>
 </template>
