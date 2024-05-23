@@ -21,7 +21,7 @@ interface Indexable {
 
 const file = ref<File | null>(null);
 
-const formData = ref<Indexable>({
+const emptyFormData = {
   name: "",
   desc: "",
   price: 0,
@@ -31,7 +31,9 @@ const formData = ref<Indexable>({
   model: "",
   condition: "New",
   category_id: 0,
-});
+}
+
+const formData = ref<Indexable>(emptyFormData);
 
 
 function onChange(value:{value:string,name:string}){
@@ -72,7 +74,8 @@ async function onSubmit(e:any){
             body:jsonBody
         }
     );
-        console.log({data,error});
+    formData.value = {...emptyFormData};
+    console.log({data,error});
     }
     catch(error){
         console.error('Error uploading file:', error);

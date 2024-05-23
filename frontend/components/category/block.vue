@@ -18,7 +18,6 @@ const props = defineProps({
   }
 });
 
-console.log(props.cat_childs);
 </script>
 
 <template>
