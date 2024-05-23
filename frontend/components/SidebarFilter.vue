@@ -11,6 +11,7 @@ const paramsToString = getParamsUrlString(getParamsArrayFromObj(paramsFromUrl));
 //refs to save data
 const products = ref<Product[]>([]);
 const filters = ref<Filter[]>([]);
+const categoryName = ref<string>("")
 
 const checkedNames = ref<{name:string,item:string}[]>(getParamsArrayFromObj(paramsFromUrl));
 
@@ -20,6 +21,7 @@ const fetchAndSetProductsAndFilters = async (id: string | string [], params: str
       const data = await getFilteredData(id, params);
       products.value = data.products;
       filters.value = data.filters;
+      categoryName.value = data.category_name;
     } catch (error) {
         console.error("Error fetching data:", error);
     }
@@ -92,7 +94,7 @@ watch(checkedNames, () => {
 
     <main class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
       <div class="border-b border-gray-200 pb-10">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900">{{route.params.id}}</h1>
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900">{{categoryName}}</h1>
       </div>
       <div class="pt-12 lg:grid lg:grid-cols-3 lg:gap-x-8 xl:grid-cols-4">
         <aside>

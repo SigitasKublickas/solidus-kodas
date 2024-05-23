@@ -35,14 +35,14 @@ export const getParamsArrayFromObj = (params: LocationQuery): Array<{ name: stri
     return result;
 }
 
-export const getFilteredData = async (path: string | string[], params: string = ""): Promise<{products:Product[] ,filters:Filter[]}> => {
+export const getFilteredData = async (path: string | string[], params: string = ""): Promise<{category_name:string , products:Product[] ,filters:Filter[]}> => {
     try {
-        const { data: productsRef } = await useFetch<{products:Product[] ,filters:Filter[]}>(`http://localhost:8000/products/filter/${path}${params !== "" ? `?${params}` : ""}`);
+        const { data: productsRef } = await useFetch<{category_name:string , products:Product[] ,filters:Filter[]}>(`http://localhost:8000/products/filter/${path}${params !== "" ? `?${params}` : ""}`);
         const products = productsRef.value; 
         if (products) {
             return products; 
         }else{
-            return {products:[] ,filters:[]};
+            return {category_name:"",products:[] ,filters:[]};
         }
 
     } catch (error) {

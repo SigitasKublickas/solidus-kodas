@@ -87,6 +87,7 @@ class ProductService
         $groupedFilters = $this->filters($products, $category, $request);
 
         return response()->json([
+            'category_name' => $category->name,
             'products' => $products,
             'filters' => $groupedFilters->map(function ($items, $index) use ($filters) {
                 return [
