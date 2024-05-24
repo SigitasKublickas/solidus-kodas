@@ -50,3 +50,9 @@ export const getFilteredData = async (path: string | string[], params: string = 
         throw new Error("Failed to fetch data");
     }
 }
+export function resetFileInput() {
+    const fileInput = document.getElementById('file') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = ''; 
+    }
+  }

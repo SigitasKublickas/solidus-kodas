@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import axios from 'axios';
+import { resetFileInput } from '~/helpers';
 
 const categories = ref<{value:string, name:string}[]>([]);
 
@@ -124,12 +125,7 @@ const onFileChange = (event: Event) => {
     file.value = target.files[0];
   }
 };
-function resetFileInput() {
-  const fileInput = document.getElementById('file') as HTMLInputElement;
-  if (fileInput) {
-    fileInput.value = ''; 
-  }
-}
+
 </script>
 
 <template>
