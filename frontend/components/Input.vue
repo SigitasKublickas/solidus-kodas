@@ -14,7 +14,7 @@ const props = defineProps({
     require:true
  },
  value:{
-   type:String,
+   type:String||Number,
    require:true
  }
 });
@@ -26,6 +26,13 @@ const emit = defineEmits(['change']);
 const change = (value:string) =>{
    emit('change' , {value:value , name:props.name});
 }
+watch(()=>props.value,(newValue)=>{
+   console.log(newValue);
+   if(newValue){
+   value.value = newValue;
+   }
+})
+
 
 </script>
 

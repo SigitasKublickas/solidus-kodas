@@ -13,7 +13,7 @@ const props = defineProps({
     </svg>
     <span class="sr-only">Info</span>
     <div>
-        <span class="font-medium">Klaida!</span> {{ msg }}.
+        <span class="font-medium">Klaida!</span> {{ props.msg }}.
     </div>
     </div>
 </template>

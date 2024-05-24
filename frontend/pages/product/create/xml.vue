@@ -71,7 +71,7 @@ watch(file, ()=>{
             `;
     }
 })
-console.log(file);
+
 </script>
 
 <template>

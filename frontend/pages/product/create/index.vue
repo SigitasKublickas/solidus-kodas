@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 const categories = ref<{value:string, name:string}[]>([]);
 (async ()=>{
     try{
@@ -21,7 +21,7 @@ interface Indexable {
 
 const file = ref<File | null>(null);
 
-const emptyFormData = {
+const emptyFormData ={
   name: "",
   desc: "",
   price: 0,
@@ -33,36 +33,55 @@ const emptyFormData = {
   category_id: 0,
 }
 
-const formData = ref<Indexable>(emptyFormData);
+const formData = ref<Indexable>({...emptyFormData});
+const showAlertSuccess = ref(false);
+const showAlertError = ref(false);
 
-
-function onChange(value:{value:string,name:string}){
-    formData.value[value.name] = value.value;
+function showSuccess () {
+    showAlertSuccess.value = true;
+    setTimeout(() => showAlertSuccess.value = false, 3000);
+}
+function showError () {
+    showAlertError.value = true;
+    setTimeout(() => showAlertError.value = false, 3000);
 }
 
-async function onSubmit(e:any){
-    e.preventDefault();
-    let fName = "";
-    await useFetch(
-        "http://localhost:8000/sanctum/csrf-cookie",
-        {credentials :"include"}
-    );
-
+function onChange(value:{value:string,name:string}){
+    formData.value = { ...formData.value, [value.name]: value.value };
+}
+async function uploadPicture (fileName:string){
     try {
-        const response = await axios.post<{ filename: string, filepath: string }>('/api/upload', {file:file.value}, {
+        const fileValue = file.value;
+        if (!fileValue) {
+        throw new Error('No file selected.');
+        }
+        const formData = new FormData();
+        formData.append("file" , fileValue , fileName);
+
+        const response = await axios.post<{ filename: string, filepath: string }>('/api/upload', formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
         }
         });
-            fName = response.data.filename;
-    } catch (error) {
-            console.error('Error uploading file:', error);
-        }
-
-    const jsonBody = JSON.stringify({...formData.value ,img_url:fName});
+        return response;
+    } catch (error: any) {
+        return {status:error.request.status , data:error.request.statusText};
+    }
+}
+async function onSubmit(e:any){
+    e.preventDefault();
+    const fileName = `${Date.now()}-${file.value?.name}`
+       
+    await useFetch(
+        "http://localhost:8000/sanctum/csrf-cookie",
+        {credentials :"include"}
+    );
+    
+    const jsonBody = JSON.stringify({...formData.value ,img_url:fileName});
 
     try{
-        const {data,error} = await useFetch(
+        
+        const {data , error} = await useFetch(
         "http://localhost:8000/products",
         {
             credentials:"include",
@@ -74,12 +93,21 @@ async function onSubmit(e:any){
             body:jsonBody
         }
     );
-    formData.value = {...emptyFormData};
-    console.log({data,error});
+        if(data && data.value){
+            const upload = await uploadPicture(fileName);
+            if(upload.status ==200){
+                showSuccess(); 
+            }
+        }
+        else if(error){
+            showError();
+        }
     }
-    catch(error){
-        console.error('Error uploading file:', error);
+    catch(error:any){
+        showError();
+        return {status:error.request.status , data:error.request.statusText};
     }
+
 }
 
 const onFileChange = (event: Event) => {
@@ -88,7 +116,6 @@ const onFileChange = (event: Event) => {
     file.value = target.files[0];
   }
 };
-
 </script>
 
 <template>
@@ -98,7 +125,7 @@ const onFileChange = (event: Event) => {
     <NuxtLink to="/product/create/xml" class= "text-white mt-12 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sukurti su xml</NuxtLink>
     
         <div class="container pt-12">
-            <form @submit="onSubmit">
+            <form ref="anyName" @submit="onSubmit">
             
                 <div class="grid gap-6 mb-6 md:grid-cols-2 p-2">
                     <Input type="text" name="name" placeholder="Pavadinimas" @change="onChange"/>
@@ -131,5 +158,9 @@ const onFileChange = (event: Event) => {
             </form>
         </div>
     </div>
+</div>
+<div class="relative w-full h-12 flex flex-wrap content-center items-center">
+    <AlertSuccess v-if="showAlertSuccess" msg="Produktas sukurtas sėkmingai!" />
+    <AlertError v-if="showAlertError" msg="Patikrinkite užpildytus laukus!" />
 </div>
 </template>
