@@ -142,7 +142,7 @@ watch(file, ()=>{
                     <option  v-for='item in categories' :key="item.name" :value="item.value">{{ item.name }}</option>
                 </select>
             </div> 
-            <p v-if="category">Jūsu pasirinktos kategorijis id: {{ category }}</p>
+            <p v-if="category">Jūsu pasirinktos kategorijos id: {{ category }}</p>
             <form @submit="onSubmitXML" class="pt-12" v-if="file">
                 <label for="product" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Produkto xml</label>
                 <textarea v-model="formXmlData" name="textarea" id="product" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Produkto xml"></textarea>
